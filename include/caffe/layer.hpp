@@ -533,3 +533,4 @@ void Layer<Dtype>::ToProto(LayerParameter* param, bool write_diff) {
 }  // namespace caffe
 
 #endif  // CAFFE_LAYER_H_
+

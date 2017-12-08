@@ -387,10 +387,15 @@ message LayerParameter {
   optional SliceParameter slice_param = 126;
   optional TanHParameter tanh_param = 127;
   optional ThresholdParameter threshold_param = 128;
+  optional TransposeParameter transpose_param = 147;
   optional TileParameter tile_param = 138;
   optional UnpoolingParameter unpooling_param = 139;
   optional WindowDataParameter window_data_param = 129;
   optional MultiStageMeanfieldParameter multi_stage_meanfield_param = 146;
+  optional MaskParameter mask_param = 141;
+  optional RecurrentParameter recurrent_param = 143;
+  optional InterpParameter interp_param = 98;
+  
 }
 
 // Message that stores parameters used to apply transformation
@@ -654,9 +659,12 @@ message EltwiseParameter {
   // Whether to use an asymptotically slower (for >2 inputs) but stabler method
   // of computing the gradient for the PROD operation. (No effect for SUM op.)
   optional bool stable_prod_grad = 3 [default = true];
+
+  // If true and the EltwiseOp is SUM, the last bottom blob is a singleton
+  // coefficient for the first N-1 bottom blobs, with shape (N-1, 1, 1, 1).
+  optional bool coeff_blob = 4 [default = false];
 }
 
-// Message that stores parameters used by EmbedLayer
 message EmbedParameter {
   optional uint32 num_output = 1; // The number of outputs for the layer
   // The input is given as integers to be interpreted as one-hot
@@ -1335,4 +1343,52 @@ message PReLUParameter {
   // Whether or not slope paramters are shared across channels.
   optional bool channel_shared = 2 [default = false];
 }
+
+message TransposeParameter {
+  optional BlobShape shape = 1;
+  enum TransposeType {
+    CONVTOLSTM = 0;
+    LSTMTOCONV = 1;
+  }
+  required TransposeType transposetype = 2;
+}
+
+message MaskParameter {
+  required uint32 width = 1;
+  required uint32 height = 2;
+  enum MaskType {
+    VERTICAL = 0;
+    HORIZONTAL = 1;
+  }
+  enum Direction {
+    LEFT2RIGHT = 0;
+    RIGHT2LEFT = 1;
+    TOP2BOTTOM = 2;
+    BOTTOM2TOP = 3;
+  }
+  optional MaskType masktype = 3 [default = VERTICAL];
+  optional Direction direction = 4 [default = TOP2BOTTOM];
+}
+
+message RecurrentParameter {
+  // The dimension of the output (and usually hidden state) representation --
+  // must be explicitly set to non-zero.
+  optional uint32 num_output = 1 [default = 0];
+
+  optional FillerParameter weight_filler = 2; // The filler for the weight
+  optional FillerParameter bias_filler = 3; // The filler for the bias
+
+  // Whether to enable displaying debug_info in the unrolled recurrent net.
+  optional bool debug_info = 4 [default = false];
+}
+
+message InterpParameter {
+  optional int32 height = 1 [default = 0]; // Height of output
+  optional int32 width = 2 [default = 0]; // Width of output
+  optional int32 zoom_factor = 3 [default = 1]; // zoom factor
+  optional int32 shrink_factor = 4 [default = 1]; // shrink factor
+  optional int32 pad_beg = 5 [default = 0]; // padding at begin of input
+  optional int32 pad_end = 6 [default = 0]; // padding at end of input
+}
+
 
