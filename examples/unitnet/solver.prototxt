@@ -1,4 +1,4 @@
-net: "/home/xu/myWorkspace/ContinuousCRF-CNN/examples/unitnet/originalModify.prototxt"
+net: "/home/xu/myWorkspace/ContinuousCRF-CNN/examples/unitnet/originalModifyWithoutBN.prototxt"
 base_lr: 0.001#0.01
 lr_policy: "step"
 gamma: 0.1
