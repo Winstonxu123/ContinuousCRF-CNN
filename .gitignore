@@ -67,6 +67,7 @@ models/*
 *.binaryproto
 *leveldb
 *lmdb
+examples/unitnet/*
 *.prototxt
 
 # build, distribute, and bins (+ python proto bindings)
