@@ -1,0 +1,113 @@
+layer {
+  name: "SegData"
+  type: "ImageLabelmapData"
+  top: "SegData"
+  #top: "label"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    mirror: false
+    mean_value: 104.008
+    mean_value: 116.669
+    mean_value: 122.675
+  }
+  image_data_param {
+    root_folder: ""
+    source: "/xu/SUNRGBD/list4.txt"
+    batch_size: 1 
+    shuffle: false
+    new_height: 0
+    new_width: 0
+  }      
+}
+layer { bottom: "SegData" top: "Segconv1_1" name: "Segconv1_1" type: "Convolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { engine: CAFFE num_output: 64 pad: 1 kernel_size: 3 } }
+layer { bottom: "Segconv1_1" top: "Segconv1_1" name: "Segrelu1_1" type: "ReLU" }
+layer { bottom: "Segconv1_1" top: "Segconv1_2" name: "Segconv1_2" type: "Convolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { engine: CAFFE num_output: 64 pad: 1 kernel_size: 3 } }
+layer { bottom: "Segconv1_2" top: "Segconv1_2" name: "Segrelu1_2" type: "ReLU" }
+layer { name: "Segpool1" bottom: "Segconv1_2" top: "Segpool1"  type: "Pooling"
+  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
+
+
+
+# conv2_1
+layer { name: "Segconv2_1" bottom: "Segpool1" top: "Segconv2_1" type: "Convolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { engine: CAFFE num_output: 128 pad: 1 kernel_size: 3 } }
+layer { bottom: "Segconv2_1" top: "Segconv2_1" name: "Segrelu2_1" type: "ReLU" }
+layer { bottom: "Segconv2_1" top: "Segconv2_2" name: "Segconv2_2" type: "Convolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { engine: CAFFE num_output: 128 pad: 1 kernel_size: 3 } }
+layer { bottom: "Segconv2_2" top: "Segconv2_2" name: "Segrelu2_2" type: "ReLU" }
+layer { bottom: "Segconv2_2" top: "Segpool2"  name: "Segpool2" type: "Pooling"
+  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
+
+
+########deconvolution############################
+layer { type: "Unpooling"  bottom: "Segpool2"  top: "Segunpool1"  name: "Segunpool1"
+  unpooling_param { unpool: MAX kernel_size: 2 stride: 2 unpool_h: 30 unpool_w: 40}
+}
+
+layer { bottom: "Segunpool1" top: "Segdeconv2_1" name: "Segdeconv2_1" type: "Deconvolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { num_output: 128   pad: 1  kernel_size: 3
+    weight_filler {      type: "gaussian"      std: 0.01    }
+    bias_filler {      type: "constant"      value: 0    }} }
+layer { bottom: "Segdeconv2_1" top: "Segdeconv2_1" name: "Segdebn2_1" type: "BN"
+param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0}
+  bn_param { scale_filler { type: "constant" value: 1 }
+             shift_filler { type: "constant" value: 0 } 
+             var_eps: 1e-10 moving_average: true decay: 0.95 } }
+layer { bottom: "Segdeconv2_1" top: "Segdeconv2_1" name: "Segderelu2_1" type: "ReLU" }
+
+# deconv2_2
+layer { bottom: "Segdeconv2_1" top: "Segdeconv2_2" name: "Segdeconv2_2" type: "Deconvolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { num_output: 128   pad: 1  kernel_size: 3
+    weight_filler {      type: "gaussian"      std: 0.01    }
+    bias_filler {      type: "constant"      value: 0    }} }
+layer { bottom: "Segdeconv2_2" top: "Segdeconv2_2" name: "Segdebn2_2" type: "BN"
+  param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0}
+  bn_param { scale_filler { type: "constant" value: 1 }
+             shift_filler { type: "constant" value: 0 } 
+             var_eps: 1e-10 moving_average: true decay: 0.95 } }
+layer { bottom: "Segdeconv2_2" top: "Segdeconv2_2" name: "Segderelu2_2" type: "ReLU" }
+
+layer { type: "Unpooling"  bottom: "Segdeconv2_2"  top: "Segunpool2"  name: "Segunpool2"
+  unpooling_param { unpool: MAX kernel_size: 2 stride: 2 unpool_h: 30 unpool_w: 40}
+  
+}
+
+layer { bottom: "Segunpool2" top: "Segdeconv1_1" name: "Segdeconv1_1" type: "Deconvolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { num_output: 128   pad: 1  kernel_size: 3
+    weight_filler {      type: "gaussian"      std: 0.01    }
+    bias_filler {      type: "constant"      value: 0    }} }
+layer { bottom: "Segdeconv1_1" top: "Segdeconv1_1" name: "Segdebn1_1" type: "BN"
+param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0}
+  bn_param { scale_filler { type: "constant" value: 1 }
+             shift_filler { type: "constant" value: 0 } 
+             var_eps: 1e-10 moving_average: true decay: 0.95 } }
+layer { bottom: "Segdeconv1_1" top: "Segdeconv1_1" name: "Segderelu1_1" type: "ReLU" }
+
+# deconv2_2
+layer { bottom: "Segdeconv1_1" top: "Segdeconv1_2" name: "Segdeconv1_2" type: "Deconvolution"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { num_output: 128   pad: 1  kernel_size: 3
+    weight_filler {      type: "gaussian"      std: 0.01    }
+    bias_filler {      type: "constant"      value: 0    }} }
+layer { bottom: "Segdeconv1_2" top: "Segdeconv1_2" name: "Segdebn1_2" type: "BN"
+  param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0} param {lr_mult: 0 decay_mult: 0}
+  bn_param { scale_filler { type: "constant" value: 1 }
+             shift_filler { type: "constant" value: 0 } 
+             var_eps: 1e-10 moving_average: true decay: 0.95 } }
+layer { bottom: "Segdeconv1_2" top: "Segdeconv1_2" name: "Segderelu1_2" type: "ReLU" }
+
+
+layer { name: "scoreSeg" type: "Deconvolution" bottom: "Segdeconv1_2" top: "scoreSeg"
+  param { lr_mult: 0 decay_mult: 1 } param { lr_mult: 0 decay_mult: 0}
+  convolution_param { engine: CAFFE num_output: 1 kernel_size: 1 } }
