@@ -135,6 +135,15 @@ class LayerRegisterer {
   }                                                                            \
   REGISTER_LAYER_CREATOR(type, Creator_##type##Layer)
 
-}  // namespace caffe
+
+#define REGISTER_LAYER_CLASS2(type, clsname)                                    \
+  template <typename Dtype>                                                    \
+  Layer<Dtype>* Creator_##clsname(const LayerParameter& param) {               \
+    return new clsname<Dtype>(param);                                          \
+  }                                                                            \
+  REGISTER_LAYER_CREATOR(type, Creator_##clsname)
+
+}  
+ // namespace caffe
 
 #endif  // CAFFE_LAYER_FACTORY_H_

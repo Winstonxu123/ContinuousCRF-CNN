@@ -479,7 +479,7 @@ message ArgMaxParameter {
   optional uint32 top_k = 2 [default = 1];
 }
 
-//// Message that stores parameters used by BN (Batch Normalization)  layer
+// Message that stores parameters used by BN (Batch Normalization)  layer
 //message BNParameter {
 //  enum BNMode {
 //    LEARN = 0;

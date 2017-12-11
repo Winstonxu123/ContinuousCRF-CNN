@@ -2,7 +2,7 @@
 #include <map>
 #include <set>
 #include <vector>
-
+#include <iostream>
 #include "caffe/layer.hpp"
 #include "caffe/net.hpp"
 #include "caffe/vision_layers.hpp"
@@ -72,6 +72,31 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
   crop_h_ = - round(crop_map.coefs()[0].second);
   crop_w_ = - round(crop_map.coefs()[1].second);
+
+
+  //modified by xu, little bug here.
+  switch (crop_h_)
+  {
+    case 17:
+      crop_h_ = crop_w_ = 2;
+    break;
+
+    case 18:
+    crop_h_ = crop_w_ = 4;
+    break;
+
+    case 20:
+    crop_h_ = crop_w_ = 8;
+    break;
+
+    case 24:
+    crop_h_ = crop_w_ = 16;
+    break;
+
+    default:break;
+  }
+  
+  std::cout << "crop_h_ = " << crop_h_ <<" crop_w_="<<crop_w_<<std::endl; 
 }
 
 template <typename Dtype>
@@ -79,23 +104,28 @@ void CropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   top[0]->Reshape(bottom[0]->num(), bottom[0]->channels(), bottom[1]->height(),
       bottom[1]->width());
+ // std::cout<<"bottom[0].num="<<bottom[0]->num()<<" bottom[0].channels="<<bottom[0]->channels()<<" bottom[0].height="<<bottom[0]->height()<<" bottom[0].width="<<bottom[0]->width()<<std::endl;
+ // std::cout << "bottom[1].height="<<bottom[1]->height()<<" bottom[1].width="<<bottom[1]->width()<<std::endl;
 }
 
 template <typename Dtype>
 void CropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
+
+  
   Dtype* top_data = top[0]->mutable_cpu_data();
   for (int n = 0; n < top[0]->num(); ++n) {
     for (int c = 0; c < top[0]->channels(); ++c) {
       for (int h = 0; h < top[0]->height(); ++h) {
         caffe_copy(top[0]->width(),
-            bottom_data + bottom[0]->offset(n, c, crop_h_ + h, crop_w_),
+            bottom_data + bottom[0]->offset(n, c, crop_h_ + h , crop_w_),
             top_data + top[0]->offset(n, c, h));
       }
     }
   }
 }
+
 
 template <typename Dtype>
 void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
@@ -109,7 +139,7 @@ void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         for (int h = 0; h < top[0]->height(); ++h) {
           caffe_copy(top[0]->width(),
               top_diff + top[0]->offset(n, c, h),
-              bottom_diff + bottom[0]->offset(n, c, crop_h_ + h, crop_w_));
+              bottom_diff + bottom[0]->offset(n, c, crop_h_ + h , crop_w_));
         }
       }
     }

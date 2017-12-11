@@ -170,10 +170,19 @@ ifneq ($(CPU_ONLY), 1)
 	LIBRARIES := cudart cublas curand
 endif
 LIBRARIES += glog gflags protobuf leveldb snappy \
-	lmdb boost_system hdf5_hl hdf5 m \
+	lmdb boost_system hdf5_serial_hl hdf5_serial m \
         opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs
 
-USE_OPENCV ?= 1
+USE_LEVELDB = 1
+USE_LMDB = 1
+USE_OPENCV = 1
+ifeq ($(USE_LEVELDB), 1)
+	LIBRARIES += leveldb snappy
+endif
+
+ifeq ($(USE_LMDB), 1)
+	LIBRARIES += lmdb
+endif
 
 ifeq ($(USE_OPENCV), 1)
         LIBRARIES += opencv_core opencv_highgui opencv_imgproc

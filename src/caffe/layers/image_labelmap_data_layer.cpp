@@ -165,12 +165,12 @@ void ImageLabelmapDataLayer<Dtype>::load_batch(LabelmapBatch<Dtype>* batch) {
 
   // datum scales
   const int lines_size = lines_.size();
-  for (int item_id = 0; item_id < batch_size; ++item_id) {
+  for (int item_id = 0; item_id < batch_size; ++item_id) {//batch_size=1,no execu
     // get a blob
     timer.Start();
     CHECK_GT(lines_size, lines_id_);
     cv::Mat cv_img = ReadImageToCVMat(root_folder + lines_[lines_id_].first,
-                                    0, 0, is_color);
+                                    0, 0, is_color);//----------------------batch_size=1,so new_height=0,new_width=0 doesn't matter----------------------
     cv::Mat cv_gt = ReadImageToCVMat(root_folder + lines_[lines_id_].second,
                                     0, 0, 0);
 
