@@ -1,8 +1,8 @@
-net: "/home/xu/myWorkspace/ContinuousCRF-CNN/examples/unitnet/originalModifyWithoutBN.prototxt"
-base_lr: 0.001#0.01
+net: "/home/xu/myWorkspace/ContinuousCRF-CNN/examples/unitnet/front-endWithoutCRFbutMultiscale426.prototxt"
+base_lr: 0.01#0.01
 lr_policy: "step"
 gamma: 0.1
-stepsize: 100#10000
+stepsize: 300#10000
 #iter_size: 8
 display: 1
 max_iter: 40000
@@ -10,6 +10,6 @@ momentum: 0.9
 weight_decay: 0.0005
 #test_interval: 500
 #test_iter: 1000
-snapshot: 50
-snapshot_prefix: "./snapshot/model"
+snapshot: 150
+snapshot_prefix: "/home/xu/myWorkspace/ContinuousCRF-CNN/examples/unitnet/snapshot/model"
 solver_mode: CPU

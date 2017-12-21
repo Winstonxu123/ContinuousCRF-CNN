@@ -99,7 +99,7 @@ void ImageLabelmapDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& b
   CHECK_GT(batch_size, 0) << "Positive batch size required";
   top_shape[0] = batch_size;
   top_shape_labelmap[0] = batch_size;
-  for (int i = 0; i < this->PREFETCH_COUNT; ++i) {
+  for (int i = 0; i < this->PREFETCH_COUNT; ++i) {//PREFETCH_COUNT=3 in data_layers.hpp
     this->prefetch_[i].data_.Reshape(top_shape);
     this->prefetch_[i].labelmap_.Reshape(top_shape_labelmap);
   }
@@ -170,7 +170,7 @@ void ImageLabelmapDataLayer<Dtype>::load_batch(LabelmapBatch<Dtype>* batch) {
     timer.Start();
     CHECK_GT(lines_size, lines_id_);
     cv::Mat cv_img = ReadImageToCVMat(root_folder + lines_[lines_id_].first,
-                                    0, 0, is_color);//----------------------batch_size=1,so new_height=0,new_width=0 doesn't matter----------------------
+                                    0, 0, is_color);//-----width=0,height=0,means no change ----------------
     cv::Mat cv_gt = ReadImageToCVMat(root_folder + lines_[lines_id_].second,
                                     0, 0, 0);
 
@@ -210,7 +210,8 @@ void ImageLabelmapDataLayer<Dtype>::load_batch(LabelmapBatch<Dtype>* batch) {
     
     cv::Mat encoded_gt;
     //regression
-    //encoded_gt = cv_gt/255;
+    // cv::divide(255.0,cv_gt,encoded_gt,CV_64FC1);
+    // cv::divide(1.0,encoded_gt,encoded_gt,CV_64FC1);
     encoded_gt = cv_gt;
     //[***Cautions***]
     //One small trick leveraging opencv roundoff feature for **consensus sampling** in Holistically-Nested Edge Detection paper.

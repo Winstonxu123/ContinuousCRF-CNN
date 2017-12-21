@@ -75,6 +75,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
 
   //modified by xu, little bug here.
+  std::cout << "original crop_h_ = " << crop_h_ <<" crop_w_="<<crop_w_<<std::endl;
   switch (crop_h_)
   {
     case 17:
@@ -96,7 +97,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     default:break;
   }
   
-  std::cout << "crop_h_ = " << crop_h_ <<" crop_w_="<<crop_w_<<std::endl; 
+  std::cout << "modified crop_h_ = " << crop_h_ <<" crop_w_="<<crop_w_<<std::endl; 
 }
 
 template <typename Dtype>

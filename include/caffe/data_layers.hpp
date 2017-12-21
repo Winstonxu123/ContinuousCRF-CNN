@@ -406,3 +406,4 @@ class WindowDataLayer : public BasePrefetchingDataLayer<Dtype> {
 }  // namespace caffe
 
 #endif  // CAFFE_DATA_LAYERS_HPP_
+
